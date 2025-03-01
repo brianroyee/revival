@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: monospace;
+            flex-direction: column;
+        }
+        
+        .title {
+            color: #00FF9C;
+            font-size: 60px;
+            margin-bottom: 60px;
+            letter-spacing: 5px;
+        }
+        
+        .field-label {
+            color: #00FF9C;
+            font-size: 24px;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+        
+        .field {
+            width: 500px;
+            height: 50px;
+            background-color: #d3d3d3;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 60px;
+            font-size: 18px;
+            padding: 0 10px;
+        }
+        
+        .unhashed {
+            color: #00FF9C;
+            font-size: 14px;
+            text-align: center;
+            margin-top: -50px;
+            margin-bottom: 40px;
+        }
+        
+        .button {
+            background-color: #00FF9C;
+            color: black;
+            border: none;
+            padding: 15px 50px;
+            font-size: 20px;
+            font-family: monospace;
+            cursor: pointer;
+            margin-top: 30px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+        
+        .message {
+            color: #FF3333;
+            font-size: 18px;
+            margin-top: 30px;
+            height: 20px;
+        }
+        
+        .screen {
+            display: none;
+            color: #00FF9C;
+            font-size: 24px;
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            height: 100vh;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        #login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            justify-content: center;
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        .loading-container {
+            width: 500px;
+            margin-top: 60px;
+        }
+        
+        .loading-bar-bg {
+            background-color: #333;
+            height: 30px;
+            width: 100%;
+            border: 2px solid #00FF9C;
+        }
+        
+        .loading-bar-fill {
+            background-color: #00FF9C;
+            height: 100%;
+            width: 0%;
+            transition: width 3s linear;
+        }
+        
+        .loading-text {
+            margin-top: 15px;
+            text-align: center;
+        }
+        
+        .question {
+            font-size: 26px;
+            margin-bottom: 60px;
+            line-height: 1.4;
+            max-width: 80%;
+        }
+        
+        h1 {
+            margin-bottom: 40px;
+        }
+        
+        p {
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+    </style>
+</head>
+<body>
+    <div id="login-container">
+        <div class="title">REVIVAL</div>
+        
+        <div class="field-label">USER</div>
+        <input type="text" id="username" class="field">
+        
+        <div class="field-label">PASSWORD</div>
+        <input type="password" id="password" class="field">
+        <div class="unhashed">[UNHASHED]</div>
+        
+        <div id="message" class="message"></div>
+    </div>
+    
+    <div id="access-granted" class="screen">
+        <h1>ACCESS GRANTED</h1>
+        <p>Welcome to REVIVAL system.</p>
+        
+        <div class="loading-container">
+            <div class="loading-bar-bg">
+                <div id="loading-bar" class="loading-bar-fill"></div>
+            </div>
+            <div class="loading-text">LOADING TSMOK KILLSWITCH...</div>
+        </div>
+    </div>
+    
+    <div id="question-screen" class="screen">
+        <P><I>The Truth Shall Set You Free</I></P>
+        <div class="question">Dear Fritz, Who did you love the most in your lifetime?</div>
+        
+        <input type="text" id="answer" class="field">
+        
+        <button class="button" onclick="validateAnswer()">SUBMIT</button>
+        
+        <div id="answer-message" class="message"></div>
+    </div>
+
+            
+    <div id="final-screen" class="screen">
+
+        <h1>THE REVIVAL HAS PUT TO EFFECT</h1>
+        <p>TSMOK HAS BEEN NEUTALIZED</p>
+        <p>All comprimised systems has been fully restored to stable operation</p>
+        <p>No further anomalies detected.</p>
+
+        <h3>THANK YOU FOR SAVING THE WORLD!</h3>
+        <p>FILL THIS FORM TO RECORD YOUR TIME --<a href="https://docs.google.com/forms/d/e/1FAIpQLSfRt1rwBKcSP-6em6uKitfYQilKKqJUrz-CDnmP2dqIyikSKQ/viewform">LINK</a></p>
+
+
+    <script>
+        // Hashed password (SHA-256 hash of "monalisa")
+        const correctUsername = "fritz";
+        const correctPasswordHash = "b03e07e441f69b698d5f717c2fc5bdfd62f145a86700900f897869ad73a8b13d";
+        const correctAnswer = "Hilary";
+        let loginAttemptsLeft = 2;
+        let answerAttemptsLeft = 2;
+
+        // Function to hash input using SHA-256
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hash = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hash))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        // Add event listener for Enter key on password field
+        document.getElementById("password").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                validateLogin();
+            }
+        });
+
+        async function validateLogin() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const messageElement = document.getElementById("message");
+            
+            // Hash the entered password
+            const hashedInput = await hashPassword(password);
+
+            if (username === correctUsername && hashedInput === correctPasswordHash) {
+                // Success - show loading screen
+                document.getElementById("login-container").style.display = "none";
+                document.getElementById("access-granted").style.display = "flex";
+                
+                // Animate loading bar
+                setTimeout(() => {
+                    document.getElementById("loading-bar").style.width = "100%";
+                }, 100);
+                
+                // Show question screen after loading
+                setTimeout(() => {
+                    document.getElementById("access-granted").style.display = "none";
+                    document.getElementById("question-screen").style.display = "flex";
+                }, 3500);
+            } else {
+                // Failed login
+                if (loginAttemptsLeft > 0) {
+                    loginAttemptsLeft--;
+                    messageElement.textContent = `Incorrect username or password. ${loginAttemptsLeft + 1} attempts remaining.`;
+                } else {
+                    messageElement.textContent = "No more attempts. Closing session...";
+                    setTimeout(() => {
+                        document.body.innerHTML = "<div style='color: #FF3333; font-size: 30px; text-align: center; height: 100vh; display: flex; justify-content: center; align-items: center;'>SESSION TERMINATED</div>";
+                    }, 2000);
+                }
+            }
+        }
+
+        function validateAnswer() {
+            const answer = document.getElementById("answer").value.trim();
+            const messageElement = document.getElementById("answer-message");
+            
+            if (answer.toLowerCase() === correctAnswer.toLowerCase()) {
+                document.getElementById("question-screen").style.display = "none";
+                document.getElementById("final-screen").style.display = "flex";
+            } else {
+                if (answerAttemptsLeft > 0) {
+                    answerAttemptsLeft--;
+                    messageElement.textContent = `Incorrect answer. ${answerAttemptsLeft + 1} attempts remaining.`;
+                } else {
+                    messageElement.textContent = "No more attempts. Security protocol initiated...";
+                    setTimeout(() => {
+                        document.body.innerHTML = "<div style='color: #FF3333; font-size: 30px; text-align: center; height: 100vh; display: flex; justify-content: center; align-items: center; flex-direction: column;'><div>SECURITY BREACH DETECTED</div><div style='margin-top: 20px;'>SESSION TERMINATED</div></div>";
+                    }, 2000);
+                }
+            }
+        }
+
+        
+        
+        document.getElementById("username").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                document.getElementById("password").focus();
+            }
+        });
+        
+        document.getElementById("answer").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                validateAnswer();
+            }
+        });
+    </script>
+</body>
+</html>
